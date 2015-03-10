@@ -73,5 +73,40 @@ function commerce_braintree_vzero_requirements($phase) {
     $requirements['commerce_braintree_vzero_php_extensions']['description'] = $t('The following PHP extensions must be enabled for Braintree: ' . implode(', ', $disabled_extensions));
   }
 
+  if ($phase == 'runtime') {
+    $t = get_t();
+    // Check for the Braintree PHP library.
+    if (file_exists(libraries_get_path('braintree_php') . '/lib/Braintree.php')) {
+      $requirements['commerce_braintree_php'] = array(
+        'value' => $t('Installed'),
+        'severity' => REQUIREMENT_OK,
+      );
+    }
+    else {
+      $requirements['commerce_braintree_php'] = array(
+        'value' => $t('Missing!'),
+        'severity' => REQUIREMENT_ERROR,
+        'description' => $t('Braintree library missing. Download the Braintree library from <a href="@url">https://github.com/braintree/braintree_php</a> and place it in to sites/all/libraries/braintree_php', array('@url' => 'https://github.com/braintree/braintree_php')),
+      );
+    }
+    $requirements['commerce_braintree_php']['title'] = $t('Braintree PHP library');
+
+    // Check for Commerce currency.
+    if (in_array(commerce_default_currency(), array('USD', 'CAD', 'EUR', 'GBP', 'AUD', 'CHF'))) {
+      $requirements['commerce_braintree_currency'] = array(
+        'value' => $t('Valid currency'),
+        'severity' => REQUIREMENT_OK,
+      );
+    }
+    else {
+      $requirements['commerce_braintree_currency'] = array(
+        'value' => $t('Invalid default currency!'),
+        'severity' => REQUIREMENT_ERROR,
+        'description' => $t('Braintree currently supports only USD, CAD, EUR, GBP, AUD and CHF as a currency.'),
+      );
+    }
+    $requirements['commerce_braintree_currency']['title'] = $t('Braintree currency check');
+  }
+
   return $requirements;
 }
