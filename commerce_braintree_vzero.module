@@ -17,8 +17,8 @@ function commerce_braintree_vzero_libraries_info() {
       'download url' => 'https://github.com/braintree/braintree_php',
       'dependencies' => array(),
       'version arguments' => array(
-        'file' => 'VERSION',
-        'pattern' => '/(1.\d+(\.\d+)?)/',
+        'file' => 'CHANGELOG.md',
+        'pattern' => '/(2.\d+(\.\d+)?)/',
       ),
       'files' => array(
         'php' => array(
@@ -109,10 +109,10 @@ function commerce_braintree_vzero_settings_form($settings = array()) {
 }
 
 function commerce_braintree_vzero_initialize($payment_method) {
-  require_once drupal_get_path(
-      'module',
-      'commerce_braintree_vzero'
-    ) . '/braintree_php/lib/Braintree.php';
+  $library = libraries_load('braintree_php');
+
+  Braintree_Configuration::environment("sandbox");
+
 
   Braintree_Configuration::merchantId(
     $payment_method['settings']['merchant_id']
@@ -125,6 +125,8 @@ function commerce_braintree_vzero_initialize($payment_method) {
     $payment_method['settings']['environment']
   );
 }
+
+
 
 /**
  * Payment method callback: submit form.
@@ -147,6 +149,19 @@ function commerce_braintree_vzero_submit_form($payment_method, $pane_values, $ch
 
   return $form;
 }
+
+/**
+ * Brings the Braintree php client library into scope
+ */
+function commerce_braintree_vzero_load_library() {
+  $library = libraries_load('braintree_php');
+  if (!$library || empty($library['loaded'])) {
+    watchdog('commerce_braintree_vzero', 'Failure to load Braintree API PHP Client Library.', array(), WATCHDOG_CRITICAL);
+    return FALSE;
+  }
+  return TRUE;
+}
+
 
 /**
  * Payment method callback: submit form validation.
